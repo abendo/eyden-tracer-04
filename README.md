@@ -1,6 +1,23 @@
 # Practical Assignment 4
+**Dealine**: 12.11.2020
+
+Please put your name here:  
 **Name:** .......
-## Problem 4.1 
+## Problem 1
+### Sphere Solid (Points 25)
+In this assignment we will continue working with _compound obkects_: solids. 
+1. Fork the current repository.
+2. Modify the README.md file in your fork and put your name above.
+3. Have a look at the new classes ```CSolidQuad``` and ```CSolidCone```. Study how a quadrilateral and a cone may be constructed from triangles.
+4. Implement the ```CSolidSphere``` class  in the same way as ```CSolidCone``` class is implemented. 
+
+**Hint:** Sphere will consist of two "caps": top and bottom ones, consisting out of triangles, and the "sides", consisting out of quadrilaterals. You might need to add _height segments_ to the sphere as well.
+
+If your implementation works as expected you should see an image of 3 geometrical objects:
+
+<img src="./doc/solids.jpg" alt="" width="600px">
+
+## Problem 2 
 ### Vertex Normals (Points 20)
 Rather then storing a single _geometry normal_ for a triangle, it is often useful to store at each ```vertex``` a corresponding _vertex normal_. The advantage is that if we have a hit point on a triangle, the shading normal can be smoothly interpolated between the vertex normals. If neighboring triangles share the same vertex normals, a smooth appearance can be generated over non-smooth tesselated geometry.  
 Proceed as follows:
@@ -49,23 +66,10 @@ Until now we have only used one color per object. Nevertheless, in reality, _e.g
 Test your implementation on barney.obj with barney.bmp. If everything is correct your image should look like this:
 ![barney](./doc/barney.jpg)
 
-## Problem 4.4
-### Supersampling (Points 10 + 10 + 10)
-A pixel actually corresponds to a square area. Currently you are sampling the pixels only at their center, which lead to aliasing. As you have learned in the lecture, the most simple way for removing aliasing artifacts from your image is _supersampling_, _i.e._ to shoot more than one ray per pixels. The three most frequently used supersampling strategies are:  
-
-**Regular Sampling:** The Pixel is subdivided into _n = m x m_ equally sized regions, which are sampled in the middle:  
-_((i+0.5)/m, (j+0.5)/n)_ for _i,j=[0 .. m-1]_
-
-**Random Sampling:** The Pixel is sampled by _n_ randomly placed samples _e<sub>i</sub> in [0; 1)_  
-_(e<sub>i,1</sub>,e<sub>i,2</sub>)_ for _i=[0 .. n-1]_
-
-**Stratified Sampling:** Stratified sampling is a combination of regular and random sampling. One sample is randomly placed in each of the _n = m x m_ regions with _e<sub>i,1</sub>,e<sub>i,2</sub> in [0, 1)_  
-_((i+e<sub>i</sub>)/m, (j+e<sub>j</sub>)/m)_ for _i,j=[0 .. m-1]_
-
-In this exercise your task is to implement these sampling strategies:
-- In the framework you can find an abstract base class ```CSampleGenerator``` with one single virtual method ```void SampleGenerator::GetSamples(int n, float *u, float *v, float *weight)```, which is supposed to works as follows: _n_ is the number of samples to be generated for a pixel. One sample consists of two coordinates (_u_, _v_) that specify a position on a pixel. The _n_ samples generated are then to be returned in the _u_ and _v_ arrays, where (_u_, _v_) should be in the domain _[0 .. 1) X [0 .. 1)_. The weights for the individual samples should sum up to 1, here just use uniform weights with ```weight[i]=1.0f/n```.
-- In your main loop, produce _n_ samples, and fire _n_ rays through the pixel at the respective sample position. The resulting color values must be weighted by ```weight[i]``` and summed up, which yields the final pixel result.
-- Implement the ```getSamples()``` method in SampleGeneratorRegular.h, SampleGeneratorRandom.h, and SampleGeneratorStratified.h which are derived classes from ```CSampleGenerator```.
-Use ground.obj and cb.bmp to render your image with 4 samples and compare them to the following images: (regular) (random) (stratified)
-
-<img src="./doc/regular.jpg" alt="regular" width="280px"><img src="./doc/random.jpg" alt="random" width="280px"><img src="./doc/stratified.jpg" alt="stratified" width="280px">
+## Submission
+Please submit the assignment by making a pull request.
+**Important** : Please make sure that
+- No _extra files_ are submitted (except those, which were mentioned in the assignment)
+- The changes were made _only_ in those files where you were asked to write your code
+- The Continiouse Integration system (appVeyor) can build the submitted code
+- The rendered images are also submitted in the folder "renders" 
