@@ -11,7 +11,7 @@ In this assignment we will continue working with _compound obkects_: solids.
 3. Have a look at the new classes ```CSolidQuad``` and ```CSolidCone```. Study how a quadrilateral and a cone may be constructed from triangles.
 4. Implement the ```CSolidSphere``` class  in the same way as ```CSolidCone``` class is implemented. 
 
-**Hint:** Sphere will consist of two "caps": top and bottom ones, consisting out of triangles, and the "sides", consisting out of quadrilaterals. You might need to add _height segments_ to the sphere as well.
+**Hint:** Sphere will consist of two "caps": top and bottom ones, consisting out of triangles, and the "sides", consisting out of quadrilaterals. You might need to use _height segments_ for the sphere as well. Please use the number of height segments equal to the half of the number of side segments
 
 If your implementation works as expected you should see an image of 3 geometrical objects:
 
