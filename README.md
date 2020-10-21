@@ -11,11 +11,13 @@ In this assignment we will continue working with _compound obkects_: solids.
 3. Have a look at the new classes ```CSolidQuad``` and ```CSolidCone```. Study how a quadrilateral and a cone may be constructed from triangles.
 4. Implement the ```CSolidSphere``` class  in the same way as ```CSolidCone``` class is implemented. 
 
-**Hint:** Sphere will consist of two "caps": top and bottom ones, consisting out of triangles, and the "sides", consisting out of quadrilaterals. You might need to use _height segments_ for the sphere as well. Please use the number of height segments equal to the half of the number of side segments
+**Hint 1:** Make use of [spherical coordinates](https://en.wikipedia.org/wiki/Spherical_coordinate_system).
+
+**Hint 2:** Sphere will consist of two "caps": top and bottom, consisting out of triangles, and the "sides", consisting out of quadrilaterals. Additional insights may be found in [```rt::CSolidCylinder``` constructor](https://github.com/Project-10/OpenRT/blob/master/modules/core/SolidCylinder.cpp). You might need to use _height segments_ for the sphere as well. Please use the number of height segments equal to the half of the number of sphere's sides.
 
 If your implementation works as expected you should see an image of 3 geometrical objects:
 
-<img src="./doc/solids.jpg" alt="" width="600px">
+<img src="./doc/solids.jpg" alt="" width="100%">
 
 ## Problem 2 
 ### Vertex Normals (Points 20)
