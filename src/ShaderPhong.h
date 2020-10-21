@@ -1,9 +1,6 @@
 #pragma once
 
 #include "ShaderFlat.h"
-#include "Scene.h"
-
-const int nAreaSamples = 1;
 
 class CShaderPhong : public CShaderFlat
 {
@@ -27,7 +24,7 @@ public:
 	{}
 	virtual ~CShaderPhong(void) = default;
 
-	virtual Vec3f Shade(const Ray& ray) const override
+	virtual Vec3f shade(const Ray& ray) const override
 	{
 		// get shading normal
 		Vec3f normal = ray.hit->getNormal(ray);
@@ -40,9 +37,9 @@ public:
 		Vec3f reflect = normalize(ray.dir - 2 * normal.dot(ray.dir) * normal);
 
 		// ambient term
-		Vec3f ambientIntensity(1,1,1);
+		Vec3f ambientIntensity(1, 1, 1);
 
-		Vec3f color = CShaderFlat::Shade();
+		Vec3f color = CShaderFlat::shade();
 		Vec3f ambientColor = m_ka * color;
 		Vec3f res = ambientColor.mul(ambientIntensity);
 
@@ -51,40 +48,36 @@ public:
 		shadow.org = ray.org + ray.t * ray.dir;
 
 		// iterate over all light sources
-		for (auto pLight : m_scene.m_vpLights)
-			for(int s = 0; s < nAreaSamples; s++) {	// TODO: make the sampling to depend on the light source type
-				// get direction to light, and intensity
-				std::optional<Vec3f> lightIntensity = pLight->Illuminate(shadow);
-				if (lightIntensity) {
-					// diffuse term
-					float cosLightNormal = shadow.dir.dot(normal);
-					if (cosLightNormal > 0) {
-						if (m_scene.Occluded(shadow))
-							continue;
+		for (auto pLight : m_scene.getLights()) {
+			// get direction to light, and intensity
+			std::optional<Vec3f> lightIntensity = pLight->illuminate(shadow);
+			if (lightIntensity) {
+				// diffuse term
+				float cosLightNormal = shadow.dir.dot(normal);
+				if (cosLightNormal > 0) {
+					if (m_scene.occluded(shadow))
+						continue;
 
-						Vec3f diffuseColor = m_kd * color;
-						res += (diffuseColor * cosLightNormal).mul(lightIntensity.value());
-					}
+					Vec3f diffuseColor = m_kd * color;
+					res += (diffuseColor * cosLightNormal).mul(lightIntensity.value());
+				}
 
-					// specular term
-					float cosLightReflect = shadow.dir.dot(reflect);
-					if (cosLightReflect > 0) {
-						Vec3f specularColor = m_ks * RGB(1, 1, 1); // white highlight;
-						res += (specularColor * powf(cosLightReflect, m_ke)).mul(lightIntensity.value());
-					}
+				// specular term
+				float cosLightReflect = shadow.dir.dot(reflect);
+				if (cosLightReflect > 0) {
+					Vec3f specularColor = m_ks * RGB(1, 1, 1); // white highlight;
+					res += (specularColor * powf(cosLightReflect, m_ke)).mul(lightIntensity.value());
 				}
 			}
-
-		if (nAreaSamples > 1)
-			res /= nAreaSamples;
+		}
 
 		for (int i = 0; i < 3; i++)
 			if (res.val[i] > 1) res.val[i] = 1;
-		
+
 		return res;
 	}
 
-	
+
 private:
 	CScene& m_scene;
 	float 	m_ka;    ///< ambient coefficient

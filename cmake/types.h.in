@@ -1,7 +1,6 @@
 #pragma once
 
 #cmakedefine ENABLE_BSP	
-#cmakedefine ENABLE_SUPERSAMPLING	
 
 #include <optional>
 #include <vector>
@@ -24,9 +23,11 @@ using namespace cv;
 	using qword	= uint64_t;
 #endif
 
-static const double	Pi	= 3.1415926;			///< Pi number
-static const float	Pif	= 3.1415926f;			///< Pi number
+static const double	Pi		= 3.1415926;			///< Pi number
+static const float	Pif		= 3.1415926f;			///< Pi number
+static const float	Infty 	= std::numeric_limits<float>::infinity();
+static const float 	Epsilon = 1E-3f;
 
-static const float Epsilon = 1E-4;
+template <class T>  T& lvalue_cast(T&& t) { return t; }
 
 #define RGB(r, g, b)  Vec3f((b), (g), (r))

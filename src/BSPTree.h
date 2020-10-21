@@ -2,31 +2,70 @@
 
 #include "BSPNode.h"
 #include "BoundingBox.h"
+#include "IPrim.h"
+#include "ray.h"
 
 namespace {
-	inline int MaxDim(Vec3f v)
+	// Calculates and return the bounding box, containing the whole scene
+	CBoundingBox calcBoundingBox(const std::vector<ptr_prim_t>& vpPrims)
+	{
+		CBoundingBox res;
+		for (auto pPrim : vpPrims)
+			res.extend(pPrim->getBoundingBox());
+		return res;
+	}
+
+	// Returns the best dimension index for next split
+	int MaxDim(const Vec3f& v)
 	{
 		return (v.val[0] > v.val[1]) ? ((v.val[0] > v.val[2]) ? 0 : 2) : ((v.val[1] > v.val[2]) ? 1 : 2);
 	}
 }
 
-class BSPTree
+// ================================ BSP Tree Class ================================
+/**
+ * @brief Binary Space Partitioning (BSP) tree class
+ */
+class CBSPTree
 {
 public:
-	/**
-	 * @brief Constructor
-	 * @param bounds The scene bounding box
-	 * @param vpPrims The vector of pointers to the primitives in the scene
-	 */
-	BSPTree(CBoundingBox& bounds, const std::vector<std::shared_ptr<CPrim>>& vpPrims)
-		: m_bounds(bounds)
-		, m_maxDepth(20)
-		, m_minTri(3)
-		, m_root(nullptr)
-	{
-		m_root = BuildTree(bounds, vpPrims, 0);
-	}
+	CBSPTree(void) = default;
+	CBSPTree(const CBSPTree&) = delete;
+	~CBSPTree(void) = default;
+	const CBSPTree& operator=(const CBSPTree&) = delete;
 	
+	/**
+	 * @brief Builds the BSP tree for the primitives provided via \b vpPrims
+	 * @param vpPrims The vector of pointers to the primitives in the scene
+	 * @param maxDepth The maximum allowed depth of the tree.
+	 * Increasing the depth of the tree may speed-up rendering, but increse the memory consumption.
+	 * @param minPrimitives The minimum number of primitives in a leaf-node.
+	 * This parameters should be alway above 1.
+	 */
+	void build(const std::vector<ptr_prim_t>& vpPrims, size_t maxDepth = 20, size_t minPrimitives = 3) {
+		m_treeBoundingBox = calcBoundingBox(vpPrims);
+		m_maxDepth = maxDepth;
+		m_minPrimitives = minPrimitives;
+		std::cout << "Scene bounds are : " << m_treeBoundingBox << std::endl;
+		m_root = build(m_treeBoundingBox, vpPrims, 0);
+	}
+	/**
+	 * @brief Checks whether the ray \b ray intersects a primitive.
+	 * @details If ray \b ray intersects a primitive, the \b ray.t value will be updated
+	 * @param[in,out] ray The ray
+	 */
+	bool intersect(Ray& ray) const
+	{
+		double t0 = 0;
+		double t1 = ray.t;
+		m_treeBoundingBox.clip(ray, t0, t1);
+		if (t1 < t0) return false;  // no intersection with the bounding box
+
+		return m_root->intersect(ray, t0, t1);
+	}
+
+
+private:
 	/**
 	 * @brief Builds the BSP tree
 	 * @details This function builds the BSP tree recursively
@@ -34,66 +73,42 @@ public:
 	 * @param vpPrims The vector of pointers to the primitives included in the bounding box \b box
 	 * @param depth The distance from the root node of the tree
 	 */
-	std::shared_ptr<CBSPNode> BuildTree(const CBoundingBox& box, const std::vector<std::shared_ptr<CPrim>>& vpPrims, int depth)
+	ptr_bspnode_t build(const CBoundingBox& box, const std::vector<ptr_prim_t>& vpPrims, size_t depth)
 	{
-		if (depth > m_maxDepth || vpPrims.size() <= m_minTri) {
-			// could do some optimizations here..
-			return std::make_shared<CBSPNode>(vpPrims);
-		}
+		// Check for stoppong criteria
+		if (depth >= m_maxDepth || vpPrims.size() <= m_minPrimitives)
+			return std::make_shared<CBSPNode>(vpPrims);                                     // => Create a leaf node and break recursion
 
-		Vec3f diam = box.m_max - box.m_min;
+		// else -> prepare for creating a branch node
+		// First split the bounding volume into two halfes
+		int     splitDim = MaxDim(box.getMaxPoint() - box.getMinPoint());                   // Calculate split dimension as the dimension where the aabb is the widest
+		float   splitVal = (box.getMinPoint()[splitDim] + box.getMaxPoint()[splitDim]) / 2; // Split the aabb exactly in two halfes
+		auto    splitBoxes = box.split(splitDim, splitVal);
+		CBoundingBox& lBox = splitBoxes.first;
+		CBoundingBox& rBox = splitBoxes.second;
 
-		int splitDim = MaxDim(diam);
-
-		CBoundingBox lBounds = box;
-		CBoundingBox rBounds = box;
-
-		float splitVal = lBounds.m_max[splitDim] = rBounds.m_min[splitDim] = (box.m_min[splitDim] + box.m_max[splitDim]) * 0.5f;
-
-		std::vector<std::shared_ptr<CPrim>> lPrim;
-		std::vector<std::shared_ptr<CPrim>> rPrim;
-
+		// Second order the primitives into new nounding boxes
+		std::vector<ptr_prim_t> lPrim;
+		std::vector<ptr_prim_t> rPrim;
 		for (auto pPrim : vpPrims) {
-			if (pPrim->inVoxel(lBounds))
+			if (pPrim->getBoundingBox().overlaps(lBox))
 				lPrim.push_back(pPrim);
-			if (pPrim->inVoxel(rBounds))
+			if (pPrim->getBoundingBox().overlaps(rBox))
 				rPrim.push_back(pPrim);
 		}
 
-		auto pLeft = BuildTree(lBounds, lPrim, depth + 1);
-		auto pRight = BuildTree(rBounds, rPrim, depth + 1);
+		// Next build recursively 2 subtrees for both halfes
+		auto pLeft = build(lBox, lPrim, depth + 1);
+		auto pRight = build(rBox, rPrim, depth + 1);
 
-		return std::make_shared<CBSPNode>(splitVal, splitDim, pLeft, pRight);
-	}
-
-	/**
-	 * @brief Checks whether the ray \b ray intersects a primitive.
-	 * @details If ray \b ray intersects a primitive, the \b ray.t value will be updated
-	 * @param[in,out] ray The ray
-	 */
-	bool Intersect(Ray& ray)
-	{
-		float t0 = 0;
-		float t1 = ray.t;
-
-		m_bounds.clip(ray, t0, t1);
-
-		if (t1 - t0 < Epsilon)
-			return false;
-
-		m_root->traverse(ray, t0, t1);
-
-		if (ray.hit)
-			return true;
-
-		return false;
+		return std::make_shared<CBSPNode>(splitDim, splitVal, pLeft, pRight);
 	}
 
 	
 private:
-	CBoundingBox 				m_bounds;
-	const int 	 				m_maxDepth;
-	const size_t	 			m_minTri;
-	std::shared_ptr<CBSPNode> 	m_root;
+	CBoundingBox 	m_treeBoundingBox;		///<
+	size_t			m_maxDepth;				///< The maximum allowed depth of the tree
+	size_t			m_minPrimitives;		///< The minimum number of primitives in a leaf-node
+	ptr_bspnode_t   m_root = nullptr;		///<
 };
 	

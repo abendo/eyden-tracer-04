@@ -1,12 +1,16 @@
+// Scene class
+// Written by Sergey Kosov in 2019 for Jacobs University
 #pragma once
 
 #include "ILight.h"
-#include "Prim.h"
-#include "CameraPerspective.h"
+#include "IPrim.h"
+#include "ICamera.h"
+#include "Solid.h"
 #ifdef ENABLE_BSP
 #include "BSPTree.h"
 #endif
 
+// ================================ Scene Class ================================
 /**
  * @brief Scene class
  */
@@ -15,34 +19,22 @@ class CScene
 public:
 	/**
 	 * @brief Constructor
-	 * @param camera The reference to the camera
+	 * @param bgColor The default background color
 	 * @todo Background may be image
 	 */
-	CScene(Vec3f bgColor = RGB(0,0,0))
-		// camera 4.1 
-		: m_pCamera(std::make_unique<CCameraPerspective>(Vec3f(0, 0, -0.8), Vec3f(0, 0, 1), Vec3f(0, 1, 0), 60, Size(800, 600)))
-		// camera 4.2
-		//: m_pCamera(std::make_unique<CCameraPerspective>(Vec3f(0, 0, 10), Vec3f(0, 0, -1), Vec3f(0, 1, 0), 60, Size(800, 600)))
-		// camera 4.3
-		//: m_pCamera(std::make_unique<CCameraPerspective>(Vec3f(0, 8, 25), Vec3f(0, 0, -1), Vec3f(0, 1, 0), 60, Size(800, 600)))
-		// camera 4.4
-		//: m_pCamera(std::make_unique<CCameraPerspective>(Vec3f(0, 1.6f, 25), Vec3f(0, 0, -1), Vec3f(0, 1, 0), 60, Size(800, 600)))
-		, m_bgColor(bgColor)
+	CScene(Vec3f bgColor = RGB(0, 0, 0))
+		: m_bgColor(bgColor)
+#ifdef ENABLE_BSP	
+		, m_pBSPTree(new CBSPTree())
+#endif
 	{}
-  	~CScene(void) = default;
-  
-	
-	/**
-	 * @brief Loads the primitives from an .obj file and adds them to the scene
-	 * @param fileName The full path to the .obj file
-	 */
-	void ParseOBJ(const std::string& fileName);
-	
+	~CScene(void) = default;
+
 	/**
 	 * @brief Adds a new primitive to the scene
 	 * @param prim Pointer to the primitive
 	 */
-	void Add(const std::shared_ptr<CPrim> pPrim)
+	void add(const ptr_prim_t pPrim)
 	{
 		m_vpPrims.push_back(pPrim);
 	}
@@ -50,87 +42,105 @@ public:
 	 * @brief Adds a new light to the scene
 	 * @param pLight Pointer to the light
 	 */
-	void Add(const std::shared_ptr<ILight> pLight)
+	void add(const ptr_light_t pLight)
 	{
 		m_vpLights.push_back(pLight);
 	}
-  
+	/**
+	 * @brief Adds a new camera to the scene and makes it to ba active
+	 * @param pCamera Pointer to the camera
+	 */
+	void add(const ptr_camera_t pCamera)
+	{
+		m_vpCameras.push_back(pCamera);
+		m_activeCamera = m_vpCameras.size() - 1;
+	}
+	/**
+	 * @brief Add a new solid to the scene
+	 * @param solid The reference to the solid
+	 */
+	void add(const CSolid& solid)
+	{
+		for (const auto& pPrim : solid.getPrims())
+			add(pPrim);
+	}
+	/**
+	 * @brief (Re-) Build the BSP tree for the current geometry present in scene
+	 * @details This function takes into accound all the primitives in scene and builds the BSP tree with the root node in \b m_pBSPTree variable.
+	 * If the geometry in the scene was updated the BSP tree should be re-built
+	 * @param maxDepth The maximum allowed depth of the tree.
+	 * Increasing the depth of the tree may speed-up rendering, but increse the memory consumption.
+	 * @param minPrimitives The minimum number of primitives in a leaf-node.
+	 * This parameters should be alway above 1.
+	 */
+	void buildAccelStructure(size_t maxDepth, size_t minPrimitives) {
+#ifdef ENABLE_BSP
+		m_pBSPTree->build(m_vpPrims, maxDepth, minPrimitives);
+#else 
+		printf("Warning: BSP support is not enabled!\n");
+#endif		
+	}
+	/**
+	 * @brief Returns the container with all scene light source objects
+	 * @note This method is to be used only in OpenRT shaders
+	 * @return The vector with pointers to the scene light sources
+	 */
+	const std::vector<ptr_light_t>	getLights(void) const { return m_vpLights; }
+	/**
+	 * @brief Returns the active camera
+	 * @retval ptr_camera_t The pointer to active camera
+	 * @retval nullptr If there are no cameras added yet into the scene
+	 */
+	ptr_camera_t getActiveCamera(void) const { return m_vpCameras.empty() ? nullptr : m_vpCameras.at(m_activeCamera); }
 	/**
 	 * @brief Checks intersection of ray \b ray with all contained objects
 	 * @param ray The ray
 	 * @retval true If ray \b ray intersects any object
 	 * @retval false otherwise
 	 */
-	bool Intersect(Ray& ray) const
+	bool intersect(Ray& ray) const
 	{
 #ifdef ENABLE_BSP
-		return m_pBSPTree->Intersect(ray);
+		return m_pBSPTree->intersect(ray);
 #else
 		bool hit = false;
-		for (auto pPrim : m_vpPrims)
-		  hit |= pPrim->Intersect(ray);
+		for (auto& pPrim : m_vpPrims)
+			hit |= pPrim->intersect(ray);
 		return hit;
 #endif
 	}
 
 	/**
-	 * @brief Find occluder
-	 * @param ray The ray
+	 * find occluder
 	 */
-	bool Occluded(Ray& ray)
+	bool occluded(Ray& ray)
 	{
 #ifdef ENABLE_BSP
-		return m_pBSPTree->Intersect(ray);
+		return m_pBSPTree->intersect(lvalue_cast(Ray(ray)));
 #else
-		for (auto pPrim : m_vpPrims)
-			if (pPrim->Occluded(ray)) return true;
+		for (auto& pPrim : m_vpPrims)
+			if (pPrim->occluded(ray)) return true;
 		return false;
 #endif
 	}
 
-#ifdef ENABLE_BSP
 	/**
-	 * @brief Calculates and return the bounding box, containing the whole scene
-	 * @return The bounding box, containing the whole scene
-	 */
-	CBoundingBox CalcBounds(void)
-	{
-		CBoundingBox res;
-		for (auto pPrim : m_vpPrims)
-			res.extend(pPrim->calcBounds());
-		return res;
-	}
-	/**
-	 * @brief Build the BSP tree for the current scene
-	 * @details This function takes into accound all the primitives in scene and builds the BSP tree with the root node in \b m_pBSPTree variable
-	 */
-	void BuildAccelStructure(void)
-	{
-		CBoundingBox box = CalcBounds();
-		std::cout << "Bounds are : " << box.m_min << " " << box.m_max << std::endl;
-		m_pBSPTree = std::make_unique<BSPTree>(box, m_vpPrims);
-	}
-#endif
-	
-	/**
-	 * @brief Traces the given ray and shade it
-	 * @param ray The ray
-	 * @return The color of the shaded ray
+	 trace the given ray and shade it and
+	 return the color of the shaded ray
 	 */
 	Vec3f RayTrace(Ray& ray) const
 	{
-		return Intersect(ray) ? ray.hit->getShader()->Shade(ray) : m_bgColor;
+		return intersect(ray) ? ray.hit->getShader()->shade(ray) : m_bgColor;
 	}
 
 
-public:
-	std::unique_ptr<CCameraPerspective>		m_pCamera;
-	std::vector<std::shared_ptr<ILight>>	m_vpLights;						///< lights
-	
 private:
-	Vec3f									m_bgColor	= RGB(0, 0, 0);    	///< background color
-	std::vector<std::shared_ptr<CPrim>> 	m_vpPrims;						///< primitives
-#ifdef ENABLE_BSP
-	std::unique_ptr<BSPTree>				m_pBSPTree	= nullptr;
+	Vec3f						m_bgColor;    			///< background color
+	std::vector<ptr_prim_t> 	m_vpPrims;				///< primitives
+	std::vector<ptr_light_t>	m_vpLights;				///< lights
+	std::vector<ptr_camera_t>	m_vpCameras;			///< Cameras
+	size_t						m_activeCamera = 0;	//< The index of the active camera
+#ifdef ENABLE_BSP		
+	std::unique_ptr<CBSPTree>	m_pBSPTree = nullptr;	///< Pointer to the acceleration structure
 #endif
 };

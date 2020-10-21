@@ -1,118 +1,78 @@
 #pragma once
 
 #include "types.h"
-#include "ray.h"
 
+struct Ray;
 
-namespace {
-	inline Vec3f Min3f(const Vec3f a, const Vec3f b)
-	{
-		return Vec3f(MIN(a.val[0], b.val[0]), MIN(a.val[1], b.val[1]), MIN(a.val[2], b.val[2]));
-	}
-
-	inline Vec3f Max3f(const Vec3f a, const Vec3f b)
-	{
-		return Vec3f(MAX(a.val[0], b.val[0]), MAX(a.val[1], b.val[1]), MAX(a.val[2], b.val[2]));
-	}
-}
-
+// ================================ AABB Class ================================
 /**
- * @brief Bounding Box class
+ * @brief Axis-Aligned Bounding Box (AABB) class
+ * @author Sergey G. Kosov, sergey.kosov@project-10.de
  */
 class CBoundingBox
 {
 public:
-	CBoundingBox(void) = default;
-	~CBoundingBox(void)= default;
-	
 	/**
-	 * @brief Resets the bounding box
-	 * @details This function resets the member variables \b m_min and \b m_max
+	 * @brief Constructor
+	 * @param minPoint The minimal point defying the size of the bounding box
+	 * @param maxPoint The maximal point defying the size of the bounding box
 	 */
-	void clear(void)
-	{
-		m_min = Vec3f::all(std::numeric_limits<float>::infinity());
-		m_max = Vec3f::all(-std::numeric_limits<float>::infinity());
+	CBoundingBox(const Vec3f& minPoint = Vec3f::all(Infty), const Vec3f& maxPoint = Vec3f::all(-Infty))
+		: m_minPoint(minPoint)
+		, m_maxPoint(maxPoint)
+	{}
+	~CBoundingBox(void) = default;
+	friend std::ostream& operator<<(std::ostream& os, const CBoundingBox& box) {
+		os << box.m_minPoint << " " << box.m_maxPoint;
+		return os;
 	}
-	
+
 	/**
-	 * @brief Extends the bounding box to contain point \b a
-	 * @param a A point
+	 * @brief Extends the bounding box to contain point \b p
+	 * @param p A point
 	 */
-	void extend(Vec3f a)
-	{
-		m_min = Min3f(a, m_min);
-		m_max = Max3f(a, m_max);
-	}
+	void extend(const Vec3f& p);
 	
 	/**
 	 * @brief Extends the bounding box to contain bounding box \b box
 	 * @param box The second bounding box
 	 */
-	void extend(const CBoundingBox& box)
-	{
-		extend(box.m_min);
-		extend(box.m_max);
-	}
-	
+	void extend(const CBoundingBox& box);
+	/**
+	 * @brief Splits the bounding box into two parts
+	 * @details This function splits the bounding box with a plane orthogonal to the axis \b dim. Two resulting bounding boxes are initialized and returned as the result.
+	 * @param dim The dimension in which the bounding box is splitted: 0 is x, 1 is y and 2 is z
+	 * @param val The value for the defined dimension where the box is splitted. It must be in range defined my minimal and maximal points of the bounding box
+	 * @returns A pair of bounding boxes, as a matter of fact "left" and "right" bounding boxes
+	 */
+	std::pair<CBoundingBox, CBoundingBox> split(int dim, float val) const;
 	/**
 	 * @brief Checks if the current bounding box overlaps with the argument bounding box \b box
 	 * @param box The secind bounding box to be checked with
 	 */
-	bool overlaps(const CBoundingBox& box)
-	{
-		for (int i = 0; i < 3; i++) {
-			if (box.m_min[i] - Epsilon > m_max[i]) return false;
-			if (box.m_max[i] + Epsilon < m_min[i]) return false;
-		}
-		return true;
-	}
+	bool overlaps(const CBoundingBox& box) const;
 	
 	/**
 	 * @brief Clips the ray with the bounding box
+	 * @details If ray \b ray does not intersect the bounding box, resulting t1 will be smaller than t0
+	 * @note This is actually a ray - aabb intersection algorithm
 	 * @param[in] ray The ray
 	 * @param[in,out] t0 The distance from ray origin at which the ray enters the bounding box
 	 * @param[in,out] t1 The distance from ray origin at which the ray leaves the bounding box
 	 */
-	void clip(const Ray& ray, float& t0, float& t1)
-	{
-		float d, den;
-		den = 1.0f / ray.dir.val[0];
-		if (ray.dir.val[0] > 0) {
-			if ((d = (m_min.val[0] - ray.org.val[0]) * den) > t0) t0 = d;
-			if ((d = (m_max.val[0] - ray.org.val[0]) * den) < t1) t1 = d;
-		}
-		else {
-			if ((d = (m_max.val[0] - ray.org.val[0]) * den) > t0) t0 = d;
-			if ((d = (m_min.val[0] - ray.org.val[0]) * den) < t1) t1 = d;
-		}
-		if (t0 > t1) return;
-
-		den = 1.0f / ray.dir.val[1];
-		if (ray.dir.val[1] > 0) {
-			if ((d = (m_min.val[1] - ray.org.val[1]) * den) > t0) t0 = d;
-			if ((d = (m_max.val[1] - ray.org.val[1]) * den) < t1) t1 = d;
-		}
-		else {
-			if ((d = (m_max.val[1] - ray.org.val[1]) * den) > t0) t0 = d;
-			if ((d = (m_min.val[1] - ray.org.val[1]) * den) < t1) t1 = d;
-		}
-		if (t0 > t1) return;
-
-		den = 1.0f / ray.dir.val[2];
-		if (ray.dir.val[2] > 0) {
-			if ((d = (m_min.val[2] - ray.org.val[2]) * den) > t0) t0 = d;
-			if ((d = (m_max.val[2] - ray.org.val[2]) * den) < t1) t1 = d;
-		}
-		else {
-			if ((d = (m_max.val[2] - ray.org.val[2]) * den) > t0) t0 = d;
-			if ((d = (m_min.val[2] - ray.org.val[2]) * den) < t1) t1 = d;
-		}
-		return;
-	}
+	void clip(const Ray& ray, double& t0, double& t1) const;
+	/**
+	 * @brief Returns the minimal point defying the size of the bounding box
+	 * @returns The minimal point defying the size of the bounding box
+	 */
+	Vec3f getMinPoint(void) const { return m_minPoint; }
+	/**
+	 * @brief Returns the maximal point defying the size of the bounding box
+	 * @returns The maximal point defying the size of the bounding box
+	 */
+	Vec3f getMaxPoint(void) const { return m_maxPoint; }
 	
-	
-public:
-	Vec3f m_min = Vec3f::all(std::numeric_limits<float>::infinity());	///< The minimal point defying the size of the bounding box
-	Vec3f m_max = Vec3f::all(-std::numeric_limits<float>::infinity());	///< The maximal point defying the size of the bounding box
+private:
+	Vec3f m_minPoint;	///< The minimal point defying the size of the bounding box
+	Vec3f m_maxPoint;	///< The maximal point defying the size of the bounding box
 };

@@ -5,34 +5,45 @@
 #include "PrimSphere.h"
 #include "PrimPlane.h"
 #include "PrimTriangle.h"
+#include "Solid.h"
+#include "SolidQuad.h"
+#include "SolidCone.h"
+#include "SolidSphere.h"
 
 #include "ShaderFlat.h"
 #include "ShaderEyelight.h"
 #include "ShaderPhong.h"
-#include "ShaderPhongBumpMapped.h"
 
-#include "SampleGeneratorRegular.h"
-#include "SampleGeneratorRandom.h"
-#include "SampleGeneratorStratified.h"
-
-#include "LightPoint.h"
-#include "LightArea.h"
+#include "LightOmni.h"
 #include "timer.h"
 
 Mat RenderFrame(void)
 {
+	// Camera resolution
+	const Size resolution(900, 400);
+	
 	// Define a scene
 	CScene scene;
 
-	// Load scene description 
-	scene.ParseOBJ("../data/cone32.obj");
-//	scene.ParseOBJ("../data/barney.obj");
-//	scene.ParseOBJ("../data/ground.obj");
+	// Add camera to scene
+	auto pCamera = std::make_shared<CCameraPerspective>(resolution, Vec3f(0, 0, -30.0f), Vec3f(0, 0, 1), Vec3f(0, 1, 0), 30);
 
-#ifdef ENABLE_BSP
+	// Shader
+	auto pShader = std::make_shared<CShaderEyelight>(RGB(0.5f, 1, 0));
+
+	// Geometry
+	CSolidCone solid_cone(pShader, Vec3f(10, -4, 0), 4, 8);
+	CSolidSphere solid_sphere(pShader, Vec3f(0, 0, 0), 4);
+	auto prim_sphere = std::make_shared<CPrimSphere>(pShader, Vec3f(-10, 0, 0), 4);
+
+	// Add everything to the scene
+	scene.add(pCamera);
+	scene.add(solid_cone);
+	scene.add(solid_sphere);
+	scene.add(prim_sphere);
+
 	// Build BSPTree
-	scene.BuildAccelStructure();
-#endif
+	scene.buildAccelStructure(2, 3);
 
 	// --- Scene description for 4.2 only ---
 
@@ -57,28 +68,14 @@ Mat RenderFrame(void)
 	// --- End description for 4.2 ---
 
 
-	Mat img(scene.m_pCamera->getResolution(), CV_32FC3);		// image array
-	Ray ray;                                          			// primary ray
+	Mat img(resolution, CV_32FC3);							// image array
+	Ray ray;												// primary ray
 
-
-#ifdef ENABLE_SUPERSAMPLING
-	auto sampleGenerator = std::make_unique<CSampleGeneratorRegular>();
-//	auto sampleGenerator = std::make_unique<CSampleGeneratorRandom>();
-//	auto sampleGenerator = std::make_unique<CSampleGeneratorStratified>();
-	int nSamples = 16;
-
-	for (int y = 0; y < img.rows; y++) {
-		for (int x = 0; x < img.cols; x++) {
-			// --- PUT YOUR CODE HERE ---
-		}
-	}
-#else
 	for (int y = 0; y < img.rows; y++)
 		for (int x = 0; x < img.cols; x++) {
-			scene.m_pCamera->InitRay(x, y, ray); // initialize ray
+			scene.getActiveCamera()->InitRay(ray, x, y);	// initialize ray
 			img.at<Vec3f>(y, x) = scene.RayTrace(ray);
 		}
-#endif
 
 	img.convertTo(img, CV_8UC3, 255);
 	return img;
@@ -86,7 +83,9 @@ Mat RenderFrame(void)
 
 int main(int argc, char* argv[])
 {
+	DirectGraphicalModels::Timer::start("Rendering...");
 	Mat img = RenderFrame();
+	DirectGraphicalModels::Timer::stop();
 	imshow("Image", img);
 	waitKey();
 	imwrite("image.jpg", img);

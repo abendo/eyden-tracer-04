@@ -9,7 +9,6 @@ namespace DirectGraphicalModels
 	// ================================ Timer Namespace ==============================
 	/**
 	* @brief %Timer
-	* @author Sergey G. Kosov, sergey.kosov@project-10.de
 	*/
 	namespace Timer 
 	{

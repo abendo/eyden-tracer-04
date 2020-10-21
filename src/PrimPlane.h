@@ -2,62 +2,58 @@
 // Written by Sergey Kosov in 2005 for Rendering Competition
 #pragma once
 
-#include "Prim.h"
+#include "IPrim.h"
 
+// ================================ Infinite Plane Primitive Class ================================
 /**
- * @brief The Plane Geaometrical Primitive class
+ * @brief The Plane Geometrical Primitive class
  */
-class CPrimPlane : public CPrim
+class CPrimPlane : public IPrim
 {
 public:
 	/**
 	 * @brief Constructor
+	 * @param pShader Pointer to the shader to be applied for the prim
 	 * @param origin Point on the plane
 	 * @param normal Normal to the plane
-	 * @param pShader Pointer to the shader to be applied for the prim
 	 */
-	CPrimPlane(Vec3f origin, Vec3f normal, std::shared_ptr<IShader> pShader)
-		: CPrim(pShader)
-		, m_normal(normalize(normal))
+	CPrimPlane(ptr_shader_t pShader, Vec3f origin, Vec3f normal)
+		: IPrim(pShader)
+		, m_normal(normal)
 		, m_origin(origin)
-	{}
+	{
+		normalize(m_normal);
+	}
 	virtual ~CPrimPlane(void) = default;
 
-	virtual bool Intersect(Ray& ray) override
+	virtual bool intersect(Ray& ray) const override
 	{
-		float t = (m_origin - ray.org).dot(m_normal) / ray.dir.dot(m_normal);
-		if (t < Epsilon || t > ray.t) return false;
-		ray.t = t;
-		ray.hit = this;
+		float dist = (m_origin - ray.org).dot(m_normal) / ray.dir.dot(m_normal);
+		if (dist < Epsilon || isinf(dist) || dist > ray.t) return false;
+
+		ray.t = dist;
+		ray.hit = shared_from_this();
 		return true;
 	}
-	
-	virtual Vec3f getNormal(const Ray& ray) const override { return m_normal; }
-	
-	virtual CBoundingBox calcBounds(void) const override
-	{
-		CBoundingBox bounds;
-		float Infinity = std::numeric_limits<float>::infinity();
 
-		if (m_normal.val[0] == 0) {
-			bounds.extend(Vec3f(m_origin.val[0], -Infinity, -Infinity));
-			bounds.extend(Vec3f(m_origin.val[0], Infinity, Infinity));
-		}
-		else if (m_normal.val[1] == 0) {
-			bounds.extend(Vec3f(-Infinity, m_origin.val[1], -Infinity));
-			bounds.extend(Vec3f(Infinity,  m_origin.val[1], Infinity));
-		}
-		else if (m_normal.val[2] == 0) {
-			bounds.extend(Vec3f(-Infinity, -Infinity, m_origin.val[2]));
-			bounds.extend(Vec3f(Infinity,   Infinity, m_origin.val[2]));
-		}
-		else {
-			bounds.extend(Vec3f(-Infinity, -Infinity, -Infinity));
-			bounds.extend(Vec3f(Infinity, Infinity, Infinity));
-		}
-		return bounds;
+	virtual Vec3f getNormal(const Ray& ray) const override
+	{
+		return m_normal;
 	}
-	
+
+	virtual CBoundingBox getBoundingBox(void) const override
+	{
+		Vec3f minPoint = Vec3f::all(-Infty);
+		Vec3f maxPoint = Vec3f::all(Infty);
+		for (int i = 0; i < 3; i++)
+			if (m_normal.val[i] == 1) {
+				minPoint.val[i] = m_origin.val[i];
+				maxPoint.val[i] = m_origin.val[i];
+				break;
+			}
+		return CBoundingBox(minPoint, maxPoint);
+	}
+
 private:
 	Vec3f m_normal;	///< Point on the plane
 	Vec3f m_origin;	///< Normal to the plane
