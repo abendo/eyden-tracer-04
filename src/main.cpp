@@ -20,7 +20,7 @@
 Mat RenderFrame(void)
 {
 	// Camera resolution
-	const Size resolution(900, 400);
+	const Size resolution(1200, 600);
 	
 	// Define a scene
 	CScene scene;
@@ -33,7 +33,7 @@ Mat RenderFrame(void)
 
 	// Geometry
 	CSolidCone solid_cone(pShader, Vec3f(10, -4, 0), 4, 8);
-	CSolidSphere solid_sphere(pShader, Vec3f(0, 0, 0), 4);
+	CSolidSphere solid_sphere(pShader, Vec3f(0, 0, 0), 4, 36);
 	auto prim_sphere = std::make_shared<CPrimSphere>(pShader, Vec3f(-10, 0, 0), 4);
 
 	// Add everything to the scene
@@ -43,7 +43,7 @@ Mat RenderFrame(void)
 	scene.add(prim_sphere);
 
 	// Build BSPTree
-	scene.buildAccelStructure(2, 3);
+	scene.buildAccelStructure(20, 3);
 
 	// --- Scene description for 4.2 only ---
 

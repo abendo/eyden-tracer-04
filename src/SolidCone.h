@@ -25,15 +25,13 @@ public:
 		const Vec3f slope(0, radius / height, 0);
 		Vec3f dir0(1, 0, 0);						// Initial direction
 		Vec3f p0 = origin + radius * dir0;			// Initial point
-		Vec3f n0 = normalize(dir0 + slope);			// Initial normnal
-		Vec3f dir1, p1, n1;							// Next point and normal
+		Vec3f dir1, p1;								// Next point
 		float t0 = 0;								// Initial texture coordinate
 		for (size_t s = 0; s < sides; s++) {
 			float t1 = static_cast<float>(s + 1) / sides; // Next texture coordinate: [1/sides; 1]
 			float alpha = -2 * Pif * t1;
 			dir1 = Vec3f(cosf(alpha), 0, sinf(alpha));
 			p1 = origin + radius * dir1;
-			n1 = normalize(dir1 + slope);
 
 			// Sides
 			if (height >= 0)	add(std::make_shared<CPrimTriangle>(pShader, origin + top, p1, p0));
@@ -45,7 +43,6 @@ public:
 
 			dir0 = dir1;
 			p0 = p1;
-			n0 = n1;
 			t0 = t1;
 		}
 	}
