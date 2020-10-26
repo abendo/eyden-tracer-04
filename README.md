@@ -35,7 +35,7 @@ Proceed as follows:
 6. Extend your code in ```CSolidSphere``` constructor in such a way that the triangles will be created with the additional normals. Calculate these normals (_e.g._ using the spherical coordinate system) and pass them within the triangles' and quads' constructors.
 7. Test your implementation the scene from Problem 1. Compare the difference between the Solid and Primitive spheres. Explain below why smoothed cone looks strange. How would you fix it?
 
-**Explanation:** ...
+**Explanationa dn Suggestion:** ...
 
 If everything is correct your images should look like this:  
 
@@ -46,19 +46,20 @@ If everything is correct your images should look like this:
 Until now we have only used one color per object. Nevertheless, in reality, _e.g._ in games, objects are very often colorful because of the usage of textures. This is also a way of making a surface look more geometrically complex. Usually, textures are used by storing _texture coordinates_ at the vertices of each triangles, and interpolating those to find the correct texel that has to be used for a surface point.
 1. Study new class ```CTexture``` added to the framework.
 2. Classes ```CShaderFlat``` and ```CShaderEyelight``` now have additional constructors, which take a texture instead of a color as a parameter.
-3. Class ```CPrimTriangle``` now contains additional variables ```m_ta```, ```m_tb``` and ```m_tc```, which correspond to the texture coordinates at vertex ```a```, ```b```, and ```c```, respectively. Here we use ```Vec2f```’s to store the texture coordinates (not ```Vec3f```), because they require only 2 coordinates (barycentric coordinates). 
-4. Class ```IPrim``` now has additional virtual method ```virtual Vec2f getTextureCoords(const Ray& ray) const = 0;``` which should be implemented in all derived classes. 
-5. Implement method ```Vec2f CPrimSphere::getTextureCoords(const Ray& ray) const``` using spherical coordinates and lecture notes. The method should to return the _x_ and _y_ coordinates of the interpolated vertex texture coordinates.
+3. Class ```IPrim``` now has additional virtual method ```virtual Vec2f getTextureCoords(const Ray& ray) const = 0;``` which should be implemented in all derived classes. 
+4. Implement method ```Vec2f CPrimSphere::getTextureCoords(const Ray& ray) const``` using spherical coordinates and lecture notes. The method should to return the _x_ and _y_ coordinates of the interpolated vertex texture coordinates.
    > Note: if you stuck here, you may refere to OpenRT library: [```rt::CPrimSphere```](https://github.com/Project-10/OpenRT/blob/master/modules/core/PrimSphere.cpp), however it may contain a bug. Double check with lecture notes and comment the code!
-6. Implement method ```Vec3f CShaderFlat::shade(const Ray& ray) const ``` to use the texture coordinates returned by ```getTextureCoords()``` if texture exists.
-7. Test your implementation with the texture of the earth by replacing ```pShaderGreen``` with ```pShaderEarth``` in main.cpp for primitive sphere.
+5. Implement method ```Vec3f CShaderFlat::shade(const Ray& ray) const ``` to use the texture coordinates returned by ```getTextureCoords()``` if texture exists.
+6. Test your implementation with the texture of the earth by replacing ```pShaderGreen``` with ```pShaderEarth``` in main.cpp for primitive sphere.
 
 If everything is correct your images should look like this:  
 
-<img src="./doc/solids_smooth.jpg" alt="" width="100%">
+<img src="./doc/earth_prim.jpg" alt="" width="100%">
 
 ## Problem 4
 ### Texturing Solids (Points 25)
+Now we continue with texturing the Solids, which consist out of triangles.
+1. Class ```CPrimTriangle``` now contains additional variables ```m_ta```, ```m_tb``` and ```m_tc```, which correspond to the texture coordinates at vertex ```a```, ```b```, and ```c```, respectively. Here we use ```Vec2f```’s to store the texture coordinates (not ```Vec3f```), because they require only 2 coordinates (barycentric coordinates). 
 
 ## Bonus
 ### Texturing (Points 20)
