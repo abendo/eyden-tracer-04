@@ -67,7 +67,7 @@ Now we continue with texturing the Solids, which consist out of triangles.
 
 If everything is correct your images should look like this:  
 
-<img src="./doc/earth_soids.jpg" alt="" width="100%">
+<img src="./doc/earth_soid.jpg" alt="" width="100%">
 
 ## Bonus
 ### Texturing (Points 20)
