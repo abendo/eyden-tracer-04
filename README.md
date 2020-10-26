@@ -50,7 +50,7 @@ Until now we have only used one color per object. Nevertheless, in reality, _e.g
 4. Implement method ```Vec2f CPrimSphere::getTextureCoords(const Ray& ray) const``` using spherical coordinates and lecture notes. The method should to return the _x_ and _y_ coordinates of the interpolated vertex texture coordinates.
    > Note: if you stuck here, you may refere to OpenRT library: [```rt::CPrimSphere```](https://github.com/Project-10/OpenRT/blob/master/modules/core/PrimSphere.cpp), however it may contain a bug. Double check with lecture notes and comment the code!
 5. Implement method ```Vec3f CShaderFlat::shade(const Ray& ray) const ``` to use the texture coordinates returned by ```getTextureCoords()``` if texture exists.
-6. Test your implementation with the texture of the earth by replacing ```pShaderGreen``` with ```pShaderEarth``` in main.cpp for primitive sphere.
+6. Test your implementation with the texture of the earth by replacing color with texture ```pTexture``` in main.cpp for eyelight shader.
 
 If everything is correct your images should look like this:  
 
@@ -60,6 +60,14 @@ If everything is correct your images should look like this:
 ### Texturing Solids (Points 25)
 Now we continue with texturing the Solids, which consist out of triangles.
 1. Class ```CPrimTriangle``` now contains additional variables ```m_ta```, ```m_tb``` and ```m_tc```, which correspond to the texture coordinates at vertex ```a```, ```b```, and ```c```, respectively. Here we use ```Vec2f```’s to store the texture coordinates (not ```Vec3f```), because they require only 2 coordinates (barycentric coordinates). 
+2. Implement method ```Vec2f CPrimTriangle::getTextureCoords(const Ray& ray) const```. The method should to return the _x_ and _y_ coordinates of the interpolated vertex texture coordinates.
+3. Extend your code in ```CSolidSphere``` constructor in such a way that the triangles will be created with the additional texture coordinates. Calculate these coordiantes (_e.g._ using the spherical coordinate system) and pass them within the triangles' and quads' constructors.
+4. Extend the code in ```CSolidCone``` constructor in such a way that the triangles will be created with the additional texture coordinates. Calculate these coordinates (_e.g._ using the cylindrical coordinate system) and pass them within the triangles' constructors. Which texture coordinate will you assign to the top of cylinder?
+5. Test your implementation. Make sure that the spheres look the same.
+
+If everything is correct your images should look like this:  
+
+<img src="./doc/earth_soids.jpg" alt="" width="100%">
 
 ## Bonus
 ### Texturing (Points 20)
