@@ -9,7 +9,7 @@ In this assignment we will continue working with _compound obkects_: solids.
 1. Fork the current repository.
 2. Modify the README.md file in your fork and put your name above.
 3. Have a look at the new classes ```CSolidQuad``` and ```CSolidCone```. Study how a quadrilateral and a cone may be constructed from triangles.
-4. Implement the ```CSolidSphere``` class  in the same way as ```CSolidCone``` class is implemented. 
+4. Implement the ```CSolidSphere``` class  in the same way as ```CSolidCone``` class is implemented. Please provide your code with comments.
 
 **Hint 1:** Make use of [spherical coordinates](https://en.wikipedia.org/wiki/Spherical_coordinate_system).
 
@@ -20,23 +20,27 @@ If your implementation works as expected you should see an image of 3 geometrica
 <img src="./doc/solids.jpg" alt="" width="100%">
 
 ## Problem 2 
-### Vertex Normals (Points 20)
+### Vertex Normals (Points 25)
 Rather then storing a single _geometry normal_ for a triangle, it is often useful to store at each ```vertex``` a corresponding _vertex normal_. The advantage is that if we have a hit point on a triangle, the shading normal can be smoothly interpolated between the vertex normals. If neighboring triangles share the same vertex normals, a smooth appearance can be generated over non-smooth tesselated geometry.  
 Proceed as follows:
-1. Fork the current repository.
-2. Modify the README.md file in your fork and put your name (or names if you work in a group) above.
-3. Extend ```CScene::ParseOBJ()``` to also support vertex normals. Take a look at the included .obj files in the data folder.
-4. Turn off BSP-support by disabling the flag `ENABLE_BSP` in types.h file or in cmake-gui.exe application. 
-5. Your ray class is extended with two additional ```float``` values calles ```Ray::u``` and ```Ray::v```.
-6. In ```bool CPrimTriangle::Intersect(Ray& ray)```, store the computed barycentric coordinates into ```Ray::u``` and ```Ray::v```.  
-Note: As long as your other classes (_e.g._ ```CPrimSphere```) don’t need local surface coordinates, there is no need to compute them yet.
-7. In the framework is a new class ```CPrimTriangleSmooth``` which stores the vertex normals (```na```, ```nb``` and ```nc```) additionaly to the original vertex positions.
-8. In ```Vec3f CPrimTriangleSmooth::GetNormal(const Ray& ray)``` use the _u_/_v_ coordinates of the hitpoint to interpolate between the vertex normals.  
-Note: Interpolating normalized vectors will not return a normalized vector! Make sure to normalize your interpolated normal!
-9. Test your implementation with cylinder16.obj and cone32.obj using the appropriate camera you can choose in Scene.h. Compare the difference between the regular and the smooth triangles.  
+1. Your ray class is extended with two additional ```float``` values calles ```Ray::u``` and ```Ray::v```.
+2. In ```bool CPrimTriangle::intersect(Ray& ray) const```, store the computed barycentric coordinates into ```Ray::u``` and ```Ray::v```.  
+> Note: as long as your other classes (_e.g._ ```CPrimSphere```) don’t need local surface coordinates, there is no need to compute them yet.
+3. Class ```CPrimTriangle``` now stores the vertex normals (```m_na```, ```m_nb``` and ```m_nc```) additionaly to the original vertex positions. 
+> Note: that all the vertex normals are optionals. Please pay extra attantion to how they initialized in the constructor.
+4. In ```Vec3f CPrimTriangleSmooth::getNormal(const Ray& ray) const``` check whether the vertex normals are initialized and if yes, use the _u_/_v_ coordinates of the hitpoint to interpolate between the vertex normals and return interpolated normal.
+> Note: interpolating normalized vectors will not return a normalized vector! Make sure to normalize your interpolated normal!
+5. Extend the code in ```CSolidCone``` constructor in such a way that the triangles will be created with the additional normals. Calculate these normals and pass them within the triangles' constructors. What normal will be chosen for the _top_ vertex? Please explain in comments.
+> Note: if you stuck here, you may refere to OpenRT library: [```rt::CSolidCone```](https://github.com/Project-10/OpenRT/blob/master/modules/core/SolidCone.cpp)
+6. Extend your code in ```CSolidSphere``` constructor in such a way that the triangles will be created with the additional normals. Calculate these normals (_e.g._ using the spherical coordinate system) and pass them within the triangles' and quads' constructors.
+7. Test your implementation the scene from Problem 1. Compare the difference between the Solid and Primitive spheres.  
+
 If everything is correct your images should look like this:  
-<img src="./doc/cylinder.jpg" width="400px"><img src="./doc/cylinder_smooth.jpg" width="400px">  
-<img src="./doc/cone.jpg" width="400px"><img src="./doc/cone_smooth.jpg" width="400px">
+
+<img src="./doc/solids_smooth.jpg" alt="" width="100%">
+
+## Problem 3
+### Texturing (Pointx XX)
 
 ## Problem 4.2
 ### Procedual Bump Mapping (Points 20)
