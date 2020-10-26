@@ -39,7 +39,7 @@ public:
 		// ambient term
 		Vec3f ambientIntensity(1, 1, 1);
 
-		Vec3f color = CShaderFlat::shade();
+		Vec3f color = CShaderFlat::shade(ray);
 		Vec3f ambientColor = m_ka * color;
 		Vec3f res = ambientColor.mul(ambientIntensity);
 

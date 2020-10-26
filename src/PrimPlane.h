@@ -41,6 +41,11 @@ public:
 		return m_normal;
 	}
 
+	virtual Vec2f getTextureCoords(const Ray& ray) const override
+	{
+		return Vec2f(0, 0);
+	}
+
 	virtual CBoundingBox getBoundingBox(void) const override
 	{
 		Vec3f minPoint = Vec3f::all(-Infty);

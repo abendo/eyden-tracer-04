@@ -49,6 +49,12 @@ public:
 	 */
 	virtual Vec3f getNormal(const Ray& ray) const = 0;
 	/**
+	 * @brief Returns the texture coordinates in the ray - primitive intercection point
+	 * @param ray Point at the surface
+	 * @return The texture coordinates
+	 */
+	virtual Vec2f getTextureCoords(const Ray& ray) const = 0;
+	/**
 	 * @brief Returns the minimum axis-aligned bounding box, which contain the primitive
 	 * @returns The bounding box, which contain the primitive
 	 */

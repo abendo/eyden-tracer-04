@@ -17,6 +17,14 @@ public:
 	CShaderEyelight(Vec3f color = RGB(0.5f, 0.5f, 0.5f))
 		: CShaderFlat(color)
 	{}
+	/**
+	 * @brief Constructor
+	 * @details This is a light-source-free shader
+	 * @param pTexture Pointer to the texture
+	 */
+	CShaderEyelight(const ptr_texture_t pTexture)
+		: CShaderFlat(pTexture)
+	{}
 	virtual ~CShaderEyelight(void) = default;
 
 	virtual Vec3f shade(const Ray& ray) const override
