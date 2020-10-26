@@ -13,4 +13,6 @@ struct Ray
 	Vec3f							dir;											///< Direction
 	double							t = std::numeric_limits<double>::infinity();	///< Current/maximum hit distance
 	std::shared_ptr<const IPrim>	hit = nullptr;									///< Pointer to currently closest primitive
+	float							u = 0;											///< Barycentric u coordinate
+	float							v = 0;											///< Barycentric v coordinate
 };

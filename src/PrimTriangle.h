@@ -17,12 +17,28 @@ public:
 	 * @param a Position of the first vertex
 	 * @param b Position of the second vertex
 	 * @param c Position of the third vertex
+ 	 * @param ta Texture coordinate for the first vertex
+ 	 * @param tb Texture coordinate for the second vertex
+ 	 * @param tc Texture coordinate for the third vertex
+ 	 * @param na Normal at vertex a
+ 	 * @param nb Normal at vertex b
+ 	 * @param nc Normal at vertex c
 	 */
-	CPrimTriangle(ptr_shader_t pShader, const Vec3f& a, const Vec3f& b, const Vec3f& c)
+	CPrimTriangle(ptr_shader_t pShader, 
+		const Vec3f& a, const Vec3f& b, const Vec3f& c, 
+		const Vec2f& ta = Vec2f::all(0), const Vec2f& tb = Vec2f::all(0), const Vec2f& tc = Vec2f::all(0), 
+		std::optional<Vec3f> na = std::nullopt, std::optional<Vec3f> nb = std::nullopt, std::optional<Vec3f> nc = std::nullopt
+	)
 		: IPrim(pShader)
 		, m_a(a)
 		, m_b(b)
 		, m_c(c)
+		, m_ta(ta)
+		, m_tb(tb)
+		, m_tc(tc)
+		, m_na(na)
+		, m_nb(nb)
+		, m_nc(nc)
 		, m_edge1(b - a)
 		, m_edge2(c - a)
 	{}
@@ -58,12 +74,18 @@ public:
 
 		ray.t = f;
 		ray.hit = shared_from_this();
+		// --- PUT YOUR CODE HERE ---
 		return true;
 	}
 
 	virtual Vec3f getNormal(const Ray& ray) const override
 	{
-		return normalize(m_edge1.cross(m_edge2));
+		if (m_na && m_nb && m_nc) {
+			// --- PUT YOUR CODE HERE ---
+			return Vec3f(0, 0, 0);
+		}
+		else 
+			return normalize(m_edge1.cross(m_edge2));
 	}
 
 	virtual CBoundingBox getBoundingBox(void) const override
@@ -77,9 +99,15 @@ public:
 
 
 private:
-	Vec3f m_a;		///< Position of the first vertex
-	Vec3f m_b;		///< Position of the second vertex
-	Vec3f m_c;		///< Position of the third vertex
-	Vec3f m_edge1;	///< Edge AB
-	Vec3f m_edge2;	///< Edge AC
+	Vec3f m_a;						///< Position of the first vertex
+	Vec3f m_b;						///< Position of the second vertex
+	Vec3f m_c;						///< Position of the third vertex
+	Vec2f m_ta;						///< Vertex a texture coordiante
+	Vec2f m_tb;						///< Vertex b texture coordiante
+	Vec2f m_tc;						///< Vertex c texture coordiante
+	std::optional<Vec3f> m_na;		///< Normal at vertex a
+	std::optional<Vec3f> m_nb;		///< Normal at vertex b
+	std::optional<Vec3f> m_nc;		///< Normal at vertex c
+	Vec3f m_edge1;					///< Edge AB
+	Vec3f m_edge2;					///< Edge AC
 };

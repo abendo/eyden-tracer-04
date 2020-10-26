@@ -33,6 +33,7 @@ public:
 			dir1 = Vec3f(cosf(alpha), 0, sinf(alpha));
 			p1 = origin + radius * dir1;
 
+			// --- PUT YOUR CODE HERE ---
 			// Sides
 			if (height >= 0)	add(std::make_shared<CPrimTriangle>(pShader, origin + top, p1, p0));
 			else				add(std::make_shared<CPrimTriangle>(pShader, origin + top, p0, p1));
