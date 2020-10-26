@@ -42,15 +42,28 @@ If everything is correct your images should look like this:
 <img src="./doc/solids_smooth.jpg" alt="" width="100%">
 
 ## Problem 3
-### Texturing (Pointx XX)
-
-## Problem 4.3
-### Texturing (Points 30)
+### Texturing Primitives (Points 25)
 Until now we have only used one color per object. Nevertheless, in reality, _e.g._ in games, objects are very often colorful because of the usage of textures. This is also a way of making a surface look more geometrically complex. Usually, textures are used by storing _texture coordinates_ at the vertices of each triangles, and interpolating those to find the correct texel that has to be used for a surface point.
-1. Turn BSP-support on
-2. In the framework is a new class ```CPrimTriangleSmoothTextured``` (derived from ```CPrimTriangleSmooth```), that additionally has the three fields ```Vec2f ta, tb, tc```, which correspond to the texture coordinates at vertex ```a```, ```b```, and ```c```, respectively. Here we will use ```Vec2f```’s to store the texture coordinates (not ```Vec3f```), because they require only 2 coordinates (barycentric coordinates). Add support for texture coordinates to your parser (```CScene::ParseOBJ()```).
-3. Implemet the method ```Vec2f CPrimTriangleSmoothTextured::getUV(const Ray& ray) const``` which is now a virtual method in your primitive base class. In ```CPrimTriangleSmoothTextured```, implement this function to return the _x_ and _y_ coordinates of the interpolated vertex texture coordinates. (For other primitives, just ignore it for now, we’ll only use texture-shaders with triangles for now).
-4. Implement the ```CShaderEyelightTextured::Shade()``` method to use the texture coordinates returned by ```getUV()``` and combine the texel color with the calculated eyelight color using the vector product. 
+1. Study new class ```CTexture``` added to the framework.
+2. Classes ```CShaderFlat``` and ```CShaderEyelight``` now have additional constructors, which take a texture instead of a color as a parameter.
+3. Class ```CPrimTriangle``` now contains additional variables ```m_ta```, ```m_tb``` and ```m_tc```, which correspond to the texture coordinates at vertex ```a```, ```b```, and ```c```, respectively. Here we use ```Vec2f```’s to store the texture coordinates (not ```Vec3f```), because they require only 2 coordinates (barycentric coordinates). 
+4. Class ```IPrim``` now has additional virtual method ```virtual Vec2f getTextureCoords(const Ray& ray) const = 0;``` which should be implemented in all derived classes. 
+5. Implement method ```Vec2f CPrimSphere::getTextureCoords(const Ray& ray) const``` using spherical coordinates and lecture notes. The method should to return the _x_ and _y_ coordinates of the interpolated vertex texture coordinates.
+   > Note: if you stuck here, you may refere to OpenRT library: [```rt::CPrimSphere```](https://github.com/Project-10/OpenRT/blob/master/modules/core/PrimSphere.cpp), however it may contain a bug. Double check with lecture notes and comment the code!
+6. Implement method ```Vec3f CShaderFlat::shade(const Ray& ray) const ``` to use the texture coordinates returned by ```getTextureCoords()``` if texture exists.
+7. Test your implementation with the texture of the earth by replacing ```pShaderGreen``` with ```pShaderEarth``` in main.cpp for primitive sphere.
+
+If everything is correct your images should look like this:  
+
+<img src="./doc/solids_smooth.jpg" alt="" width="100%">
+
+## Problem 4
+### Texturing Solids (Points 25)
+
+## Bonus
+### Texturing (Points 20)
+2. Implemet the method ```Vec2f CPrimTriangleSmoothTextured::getUV(const Ray& ray) const``` which is now a virtual method in your primitive base class. In ```CPrimTriangleSmoothTextured```, implement this function to return the _x_ and _y_ coordinates of the interpolated vertex texture coordinates. (For other primitives, just ignore it for now, we’ll only use texture-shaders with triangles for now).
+3. Implement the ```CShaderEyelightTextured::Shade()``` method to use the texture coordinates returned by ```getUV()``` and combine the texel color with the calculated eyelight color using the vector product. 
 
 Test your implementation on barney.obj with barney.bmp. If everything is correct your image should look like this:
 ![barney](./doc/barney.jpg)
