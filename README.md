@@ -33,7 +33,9 @@ Proceed as follows:
 5. Extend the code in ```CSolidCone``` constructor in such a way that the triangles will be created with the additional normals. Calculate these normals and pass them within the triangles' constructors. What normal will be chosen for the _top_ vertex? Please explain in comments.
    > Note: if you stuck here, you may refere to OpenRT library: [```rt::CSolidCone```](https://github.com/Project-10/OpenRT/blob/master/modules/core/SolidCone.cpp)
 6. Extend your code in ```CSolidSphere``` constructor in such a way that the triangles will be created with the additional normals. Calculate these normals (_e.g._ using the spherical coordinate system) and pass them within the triangles' and quads' constructors.
-7. Test your implementation the scene from Problem 1. Compare the difference between the Solid and Primitive spheres.  
+7. Test your implementation the scene from Problem 1. Compare the difference between the Solid and Primitive spheres. Explain below why smoothed cone looks strange. How would you fix it?
+
+**Explanation:** ...
 
 If everything is correct your images should look like this:  
 
