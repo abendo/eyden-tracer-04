@@ -64,6 +64,12 @@ public:
 		return normal;
 	}
 
+	virtual Vec2f getTextureCoords(const Ray& ray) const override
+	{
+		// --- PUT YOUR CODE HERE ---
+		return Vec2f(0, 0);
+	}
+
 	virtual CBoundingBox getBoundingBox(void) const override
 	{
 		return CBoundingBox(m_origin - Vec3f::all(m_radius), m_origin + Vec3f::all(m_radius));

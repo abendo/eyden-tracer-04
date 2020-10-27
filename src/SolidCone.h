@@ -22,7 +22,6 @@ public:
 	CSolidCone(ptr_shader_t pShader, const Vec3f& origin = Vec3f::all(0), float radius = 1, float height = 1, size_t sides = 24) 
 	{
 		const Vec3f top(0, height, 0);				// The top point
-		const Vec3f slope(0, radius / height, 0);
 		Vec3f dir0(1, 0, 0);						// Initial direction
 		Vec3f p0 = origin + radius * dir0;			// Initial point
 		Vec3f dir1, p1;								// Next point

@@ -39,11 +39,12 @@ public:
 					Vec3f v;
 					for (int i = 0; i < 3; i++) ss >> v.val[i];
 					// std::cout << "Vertex: " << v << std::endl;
-					vVertexes.push_back(8 * v);
+					vVertexes.push_back(v);
 				}
 				else if (line == "vt") {
 					Vec2f vt;
 					for (int i = 0; i < 2; i++) ss >> vt.val[i];
+					vt.val[1] = 1.0f - vt.val[1];
 					vTextures.push_back(vt);
 				}
 				else if (line == "vn") {
@@ -65,7 +66,9 @@ public:
 					}
 					//std::cout << "Face: " << V << std::endl;
 					//std::cout << "Normal: " << N << std::endl;
-					add(std::make_shared<CPrimTriangle>(pShader, vVertexes[V.val[0]], vVertexes[V.val[1]], vVertexes[V.val[2]]));
+					add(std::make_shared<CPrimTriangle>(pShader, vVertexes[V.val[0]], vVertexes[V.val[1]], vVertexes[V.val[2]],
+						vTextures[T.val[0]], vTextures[T.val[1]], vTextures[T.val[2]],
+						vNormals[N.val[0]], vNormals[N.val[1]], vNormals[N.val[2]]));
 				}
 				else if (line == "#") {}
 				else {

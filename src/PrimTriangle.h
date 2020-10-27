@@ -75,6 +75,7 @@ public:
 		ray.t = f;
 		ray.hit = shared_from_this();
 		// --- PUT YOUR CODE HERE ---
+
 		return true;
 	}
 
@@ -86,6 +87,12 @@ public:
 		}
 		else 
 			return normalize(m_edge1.cross(m_edge2));
+	}
+
+	virtual Vec2f getTextureCoords(const Ray& ray) const override
+	{
+		// --- PUT YOUR CODE HERE ---
+		return Vec2f(0, 0);
 	}
 
 	virtual CBoundingBox getBoundingBox(void) const override

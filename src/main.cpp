@@ -14,6 +14,8 @@
 #include "ShaderEyelight.h"
 #include "ShaderPhong.h"
 
+#include "Texture.h"
+
 #include "LightOmni.h"
 #include "timer.h"
 
@@ -28,7 +30,18 @@ Mat RenderFrame(void)
 	// Add camera to scene
 	auto pCamera = std::make_shared<CCameraPerspective>(resolution, Vec3f(0, 0, -30.0f), Vec3f(0, 0, 1), Vec3f(0, 1, 0), 30);
 
-	// Shader
+#ifdef WIN32
+	const std::string dataPath = "../data/";
+#else
+	const std::string dataPath = "../../data/";
+#endif
+
+	// Texture
+	Mat earth = imread(dataPath + "1_earth_8k.jpg");
+	if (earth.empty()) printf("ERROR: Texture file is not found!\n");
+	auto pTexture = std::make_shared<CTexture>(earth);
+
+	// Shaders
 	auto pShader = std::make_shared<CShaderEyelight>(RGB(0.5f, 1, 0));
 
 	// Geometry
@@ -44,29 +57,6 @@ Mat RenderFrame(void)
 
 	// Build BSPTree
 	scene.buildAccelStructure(20, 3);
-
-	// --- Scene description for 4.2 only ---
-
-	//auto shd1 = std::make_shared<CShaderPhongBumpMapped>(scene, RGB(1, 0, 0), 0.1f, 0.5f, 0.5f, 40); // red surface
-	//auto shd2 = std::make_shared<CShaderPhongBumpMapped>(scene, RGB(1, 1, 0), 0.1f, 0.5f, 0.5f, 40); // yellow surface
-	//
-	//auto shd3 = std::make_shared<CShaderPhong>(scene, RGB(0, 1, 1), 0.1f, 0.5f, 0.5f, 40); // cyan surface
-	//auto shd4 = std::make_shared<CShaderPhong>(scene, RGB(0, 0, 1), 0.1f, 0.5f, 0.5f, 40); // blue surface
-	//
-	//scene.Add(std::make_shared<CPrimSphere>(Vec3f(-2, 1.7f, 0), 2, shd1));
-	//scene.Add(std::make_shared<CPrimSphere>(Vec3f(1, -1, 1), 2.2f, shd3));
-	//scene.Add(std::make_shared<CPrimSphere>(Vec3f(3, 0.8f, -2), 2, shd4));
-	//scene.Add(std::make_shared<CPrimPlane>(Vec3f(0, -1, 0), Vec3f(0, 1, 0), shd2));
-	//
-	//Vec3f pointLightIntensity(7, 7, 7);
-	//Vec3f lightPosition2(-3, 5, 4);
-	//Vec3f lightPosition3(0, 1, 4);
-	//
-	//scene.Add(std::make_shared<CLightPoint>(pointLightIntensity, lightPosition2));
-	//scene.Add(std::make_shared<CLightPoint>(pointLightIntensity, lightPosition3));
-
-	// --- End description for 4.2 ---
-
 
 	Mat img(resolution, CV_32FC3);							// image array
 	Ray ray;												// primary ray
