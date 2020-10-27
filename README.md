@@ -70,9 +70,9 @@ If everything is correct your images should look like this:
 <img src="./doc/earth_solid.jpg" alt="" width="100%">
 
 ## Bonus
-### Texturing (Points 20)
-2. Implemet the method ```Vec2f CPrimTriangleSmoothTextured::getUV(const Ray& ray) const``` which is now a virtual method in your primitive base class. In ```CPrimTriangleSmoothTextured```, implement this function to return the _x_ and _y_ coordinates of the interpolated vertex texture coordinates. (For other primitives, just ignore it for now, we’ll only use texture-shaders with triangles for now).
-3. Implement the ```CShaderEyelightTextured::Shade()``` method to use the texture coordinates returned by ```getUV()``` and combine the texel color with the calculated eyelight color using the vector product. 
+### Texturing Barney (Points 20)
+Now it is time to apply a texture to a more complex solid - a toy character Barney. In the data folder you will find files **barney.obj** and **barney.bmp**.
+Using the expieriense gained so far, add to the scene Barney and apply his texture. For this you are free to add corresponding code to main.cpp file: comment out the existing geometry, add a second camera to the scene. Render the image.
 
 Test your implementation on barney.obj with barney.bmp. If everything is correct your image should look like this:
 ![barney](./doc/barney.jpg)
